@@ -6,23 +6,32 @@ function getSalesDataForCSV($filter, $con) {
     $currentDate = date("Y-m-d");
 
     if ($filter == 'today') {
-        $sql = "SELECT sales_total_amount, sales_quantity_sold, sales_total_invested_price, sales_date 
-                FROM Sales WHERE DATE(sales_date) = '$currentDate'";
+        $sql = "SELECT p.product_name, s.sales_total_amount, s.sales_quantity_sold, s.sales_total_invested_price, s.sales_date 
+                FROM Sales s
+                JOIN Products p ON s.product_id = p.product_id
+                WHERE DATE(s.sales_date) = '$currentDate'";
     } elseif ($filter == 'this_week') {
         $startOfWeek = date("Y-m-d", strtotime('monday this week'));
-        $sql = "SELECT sales_total_amount, sales_quantity_sold, sales_total_invested_price, sales_date 
-                FROM Sales WHERE sales_date BETWEEN '$startOfWeek' AND '$currentDate'";
+        $sql = "SELECT p.product_name, s.sales_total_amount, s.sales_quantity_sold, s.sales_total_invested_price, s.sales_date 
+                FROM Sales s
+                JOIN Products p ON s.product_id = p.product_id
+                WHERE s.sales_date BETWEEN '$startOfWeek' AND '$currentDate'";
     } elseif ($filter == 'this_month') {
         $startOfMonth = date("Y-m-01");
-        $sql = "SELECT sales_total_amount, sales_quantity_sold, sales_total_invested_price, sales_date 
-                FROM Sales WHERE sales_date BETWEEN '$startOfMonth' AND '$currentDate'";
+        $sql = "SELECT p.product_name, s.sales_total_amount, s.sales_quantity_sold, s.sales_total_invested_price, s.sales_date 
+                FROM Sales s
+                JOIN Products p ON s.product_id = p.product_id
+                WHERE s.sales_date BETWEEN '$startOfMonth' AND '$currentDate'";
     } elseif ($filter == 'this_year') {
         $startOfYear = date("Y-01-01");
-        $sql = "SELECT sales_total_amount, sales_quantity_sold, sales_total_invested_price, sales_date 
-                FROM Sales WHERE sales_date BETWEEN '$startOfYear' AND '$currentDate'";
+        $sql = "SELECT p.product_name, s.sales_total_amount, s.sales_quantity_sold, s.sales_total_invested_price, s.sales_date 
+                FROM Sales s
+                JOIN Products p ON s.product_id = p.product_id
+                WHERE s.sales_date BETWEEN '$startOfYear' AND '$currentDate'";
     } else {
-        $sql = "SELECT sales_total_amount, sales_quantity_sold, sales_total_invested_price, sales_date 
-                FROM Sales"; // No filter, return all data
+        $sql = "SELECT p.product_name, s.sales_total_amount, s.sales_quantity_sold, s.sales_total_invested_price, s.sales_date 
+                FROM Sales s
+                JOIN Products p ON s.product_id = p.product_id"; // No filter, return all data
     }
 
     $result = $con->query($sql);
@@ -51,10 +60,13 @@ if (isset($_POST['csv_filter'])) {
     header('Content-Disposition: attachment; filename="' . $filename . '"');
 
     $output = fopen('php://output', 'w');
-    fputcsv($output, ['Total Amount', 'Quantity Sold', 'Total Invested Price', 'Sales Date']);
+    // Make sure to include product_name in the header
+    fputcsv($output, ['Product Name', 'Total Amount', 'Quantity Sold', 'Total Invested Price', 'Sales Date']);
 
     foreach ($salesData as $row) {
+        // Ensure that the keys are correct here
         fputcsv($output, [
+            $row['product_name'],  // Output Product Name
             $row['sales_total_amount'], 
             $row['sales_quantity_sold'], 
             $row['sales_total_invested_price'], 
@@ -65,4 +77,6 @@ if (isset($_POST['csv_filter'])) {
     fclose($output);
     exit();
 }
+
+
 ?>
