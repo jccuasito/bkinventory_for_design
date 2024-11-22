@@ -152,8 +152,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
         var csvContent = "data:text/csv;charset=utf-8,";
         
-        // Add CSV header
-        csvContent += "Product,Quantity,Price,Total Amount,Amount Paid,Payment Method,Change Amount,Cashier Name\r\n";
+        // Add CSV header (without Total Amount column)
+        csvContent += "Product,Quantity,Price,Amount Paid,Payment Method,Change Amount,Cashier Name\r\n";
 
         // Get the product details from the receipt and format each product in CSV rows
         var table = document.getElementById('receiptDetails').querySelector('table');
@@ -167,10 +167,12 @@ document.addEventListener('DOMContentLoaded', function () {
                 var product = cols[0].textContent.trim();    // Product name
                 var quantity = parseInt(cols[1].textContent.trim(), 10);   // Quantity
                 var price = parseFloat(cols[2].textContent.trim());      // Price
-                var totalAmount = (price * quantity).toFixed(2);  // Total Amount (Price * Quantity)
-
+                
+                // Remove the "Total Amount" calculation from the CSV
+                // We only include product, quantity, price, and the other receipt data
+                
                 // Format the row data and append it to the CSV content
-                csvContent += `${product},${quantity},${price.toFixed(2)},${totalAmount},${window.receiptData.amountPaid},${window.receiptData.paymentMethod},${window.receiptData.changeAmount},${window.receiptData.cashierName}\r\n`;
+                csvContent += `${product},${quantity},${price.toFixed(2)},${window.receiptData.amountPaid},${window.receiptData.paymentMethod},${window.receiptData.changeAmount},${window.receiptData.cashierName}\r\n`;
             }
         });
 
@@ -184,4 +186,5 @@ document.addEventListener('DOMContentLoaded', function () {
         link.click(); // This will download the data file named "receipt.csv"
         document.body.removeChild(link); // Clean up the link element
     });
+
 });
